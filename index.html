@@ -1,0 +1,96 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>BGdle</title>
+</head>
+<style>
+    #letters {
+        width: 100%;
+        display: flex;
+    }
+    .letter {
+        width: 100px;
+        height: 100px;
+        border: 1px solid black;
+    }
+</style>
+<body>
+<div id="letters">
+
+</div>
+</body>
+<script>
+    var games = ["Catan", "Gloomhaven", "Frosthaven", "Everdale"];
+    var index = Math.floor(Math.random()*games.length);
+    var game = games[index];
+    var container = document.getElementById("letters");
+    var letters = [];
+    for (let i = 0; i < game.length; i++) {
+        let letter = document.createElement("div");
+        letter.classList.add("letter");
+        container.appendChild(letter);
+        letters.push(letter);
+    }
+    function removeLetter() {
+        for (let i = letters.length - 1; i >= 0; i--) {
+            let l = letters[i];
+            if (l.textContent.length == 0)
+                continue;
+
+            l.textContent = "";
+            return;
+        }
+        // no letters yet
+    }
+    function addLetter(letter) {
+        for (let l of letters) {
+            if (l.textContent.length != 0)
+                continue;
+
+            l.textContent = letter;
+            return;
+        }
+        // all letters full
+    }
+    function checkSolution() {
+        let word = letters.map(a => a.textContent).join("");
+        if (word.length != game.length) {
+            alert("not enough letters");
+            return;
+        }
+        word = word.toLowerCase();
+        if (!games.find(game => game.toLowerCase() == word)) {
+            alert("game doesnt exist");
+            return;
+        }
+        
+        //TODO: wordle mechanics
+        //TODO: check if word in dataset
+        if (word.toLowerCase() != game.toLowerCase()) {
+            alert("invalid");
+            return;
+        }
+        alert("correct");
+    }
+    document.onkeydown = (e) => {
+        if (e.repeat)
+            return;
+        if (e.key == "Backspace") {
+            removeLetter();
+            return;
+        }
+        if (e.key == "Enter") {
+            checkSolution();
+            return;
+        }
+        if ((e.keyCode >= 65 && e.keyCode <= 90) || //A-Z
+            (e.keyCode >= 97 && e.keyCode <= 123)) {
+            addLetter(e.key.toUpperCase());
+            return;
+        }
+    };
+</script>
+</html>
