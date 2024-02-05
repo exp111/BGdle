@@ -10,31 +10,79 @@
     #letters {
         width: 100%;
         display: flex;
+        flex-direction: column;
     }
+
+    .row {
+        display: flex;
+    }
+
     .letter {
         width: 100px;
         height: 100px;
         border: 1px solid black;
+        text-align: center;
+        line-height: 100px;
+        font-size: 3rem;
+        font-family: Arial, serif;
+    }
+
+    .letter.invalid {
+        background: grey;
+    }
+
+    .letter.correct {
+        background: green;
+    }
+
+    .letter.wrong-position {
+        background: orange;
     }
 </style>
 <body>
 <div id="letters">
 
 </div>
+<div id="popup"></div>
 </body>
 <script>
-    var games = ["Catan", "Gloomhaven", "Frosthaven", "Everdale"];
-    var index = Math.floor(Math.random()*games.length);
+    //TODO: dataset
+    const games = ["Catan", "Gloom", "Frost", "Everd"];
+    var seed = new Date().toISOString().split("T")[0]; // current day //TODO: timezones?
+    //TODO: seed
+    let index = Math.floor(Math.random() * games.length);
     var game = games[index];
     var container = document.getElementById("letters");
-    var letters = [];
-    for (let i = 0; i < game.length; i++) {
-        let letter = document.createElement("div");
-        letter.classList.add("letter");
-        container.appendChild(letter);
-        letters.push(letter);
+    var rows = [];
+    var currentRow = 0;
+    var finished = false;
+    for (let row = 0; row < 5; row++) {
+        let arr = [];
+        let rowWrap = document.createElement("div");
+        rowWrap.classList.add("row");
+        for (let i = 0; i < game.length; i++) {
+            let letter = document.createElement("div");
+            letter.classList.add("letter");
+            rowWrap.appendChild(letter);
+            arr.push(letter);
+        }
+        container.appendChild(rowWrap);
+        rows.push(arr);
     }
+
+    function addPopup(text, time = 1500) {
+        let container = document.getElementById("popup");
+        let el = document.createElement("div");
+        el.textContent = text;
+        container.appendChild(el);
+        setTimeout(() => {
+            //TODO: fadeout
+            el.remove();
+        }, time)
+    }
+
     function removeLetter() {
+        let letters = rows[currentRow];
         for (let i = letters.length - 1; i >= 0; i--) {
             let l = letters[i];
             if (l.textContent.length == 0)
@@ -45,7 +93,9 @@
         }
         // no letters yet
     }
+
     function addLetter(letter) {
+        let letters = rows[currentRow];
         for (let l of letters) {
             if (l.textContent.length != 0)
                 continue;
@@ -55,41 +105,78 @@
         }
         // all letters full
     }
+
     function checkSolution() {
+        let letters = rows[currentRow];
         let word = letters.map(a => a.textContent).join("");
         if (word.length != game.length) {
-            alert("not enough letters");
+            addPopup("not enough letters");
             return;
         }
         word = word.toLowerCase();
+        // check if game exists in our db
         if (!games.find(game => game.toLowerCase() == word)) {
-            alert("game doesnt exist");
+            addPopup("game doesnt exist");
             return;
         }
-        
+
         //TODO: wordle mechanics
-        //TODO: check if word in dataset
-        if (word.toLowerCase() != game.toLowerCase()) {
-            alert("invalid");
+        currentRow++;
+        if (currentRow == 5) {
+            finished = true;
+        }
+        let original = game.toLowerCase();
+        let correctWord = true;
+        for (let i = 0; i < word.length; i++) {
+            let cur = letters[i];
+            let ours = word[i];
+            let orig = original[i];
+            if (ours == orig) {
+                cur.classList.add("correct");
+            } else if (ours != orig) {
+                correctWord = false;
+                if (original.includes(ours)) {
+                    cur.classList.add("wrong-position");
+                } else {
+                    cur.classList.add("invalid");
+                }
+            }
+        }
+        if (!correctWord) {
+            addPopup("invalid");
             return;
         }
-        alert("correct");
+
+        addPopup("correct");
+        finished = true;
     }
+
     document.onkeydown = (e) => {
+        // game finished?
+        if (finished)
+            return;
+        // ignore when the key is held
         if (e.repeat)
             return;
+        // case: backspace => remove last letter
         if (e.key == "Backspace") {
             removeLetter();
             return;
         }
+        // case: enter => try to check if the word is correct
         if (e.key == "Enter") {
             checkSolution();
             return;
         }
-        if ((e.keyCode >= 65 && e.keyCode <= 90) || //A-Z
-            (e.keyCode >= 97 && e.keyCode <= 123)) {
-            addLetter(e.key.toUpperCase());
-            return;
+        // case: alpha char => try to add
+        if (e.key.length == 1) {
+            let code = e.key.charCodeAt(0);
+            if ((code >= 65 && code <= 90) || //A-Z
+                (code >= 97 && code <= 123)) //a-z
+            {
+                addLetter(e.key.toUpperCase());
+                return;
+            }
         }
     };
 </script>
