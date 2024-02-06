@@ -11,7 +11,8 @@ with open("boardgames_ranks.csv", encoding="utf8") as csvfile:
         name = row[1]
         rank = int(row[3])
         length = len(name)
-        if (length in result and rank > 0 and rank <= 1000):
+        if (length in result and rank > 0 and rank <= 1000 and 
+            not any((char.isdigit() or char == " ") for char in name)):
             result[length].append(name)
 print(result)
 for i in result:
