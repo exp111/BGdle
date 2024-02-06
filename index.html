@@ -47,16 +47,20 @@
 </body>
 <script>
     //TODO: dataset
-    const games = ["Catan", "Gloom", "Frost", "Everd"];
+    const games = {4: ['Root', 'Azul', 'Inis', 'Dune', 'Hive', 'Dune', 'Deus', 'Coup', 'Fort', 'Cuba', 'Luna', 'Reef', 'FUSE', 'Yedo', 'Roam', 'Jaws'], 5: ['SCOUT', 'PARKS', 'Targi', 'Kemet', 'Earth', 'Paleo', 'Tichu', 'YINSH', 'KLASK', 'Steam', 'Tikal', 'Dixit', 'Abyss', 'Maria', 'Skull', 'Chess', 'Macao', 'CATAN', 'TZAAR', 'DVONN', 'Conan', 'Cacao', 'Golem', 'Finca', 'Jambo', 'ZERTZ', 'Qwixx', 'Luxor', 'Genoa'], 6: ['Scythe', 'Lisboa', 'Caylus', 'Troyes', 'Trajan', 'Iberia', 'Revive', 'Jaipur', 'Meadow', 'Calico', 'Shogun', 'Rococo', 'Ethnos', 'Bitoku', 'Bruges', 'Gizmos', 'Newton', 'Gugong', 'Nippon', 'Fresco', 'Hadara', 'Oceans', 'Hanabi', 'Friday', 'Canvas', 'Raptor', 'London', 'Karuba', 'Vinhos', 'Egizia', 'Tobago', 'Apiary', 'Thebes', 'Medici', 'Taluva', 'Trains', 'Torres', 'Feudum', 'Mexica', 'Myrmes', 'Menara', 'Blokus', 'Maquis', 'Perudo', 'Unfair', 'Wizard', 'Gentes', 'Morels', 'Parade', 'Bridge', 'Attika']}
     var seed = new Date().toISOString().split("T")[0]; // current day //TODO: timezones?
     //TODO: seed
-    let index = Math.floor(Math.random() * games.length);
-    var game = games[index];
+    let keys = Object.keys(games);
+    let lengthIndex = Math.floor(Math.random() * keys.length);
+    let length = keys[lengthIndex];
+    const curGames = games[length];
+    let gameIndex = Math.floor(Math.random() * curGames.length);
+    var game = curGames[gameIndex];
     var container = document.getElementById("letters");
     var rows = [];
     var currentRow = 0;
     var finished = false;
-    for (let row = 0; row < 5; row++) {
+    for (let row = 0; row < game.length; row++) {
         let arr = [];
         let rowWrap = document.createElement("div");
         rowWrap.classList.add("row");
@@ -115,14 +119,14 @@
         }
         word = word.toLowerCase();
         // check if game exists in our db
-        if (!games.find(game => game.toLowerCase() == word)) {
+        if (!curGames.find(game => game.toLowerCase() == word)) {
             addPopup("game doesnt exist");
             return;
         }
 
         //TODO: wordle mechanics
         currentRow++;
-        if (currentRow == 5) {
+        if (currentRow == game.length) {
             finished = true;
         }
         let original = game.toLowerCase();
@@ -143,7 +147,6 @@
             }
         }
         if (!correctWord) {
-            addPopup("invalid");
             return;
         }
 
